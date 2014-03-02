@@ -1,0 +1,84 @@
+/*
+ * Activity for recording data
+ * 
+ * written by Vas
+ * */
+package com.example.simplewifi;
+
+import java.util.ArrayList;
+
+import android.app.Activity;
+import android.graphics.PointF;
+import android.net.wifi.WifiManager;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+
+import com.example.ToolBox.compassData;
+import com.example.ToolBox.inventory;
+import com.example.ToolBox.wifiData;
+
+public class FingerPrinter extends Activity {
+
+	private WifiManager wify;
+	private wifiData wifidata;
+	private Button bstart;
+	private Button bstop;
+	private compassData compassdata;
+	private FingerPrinter fprint;
+	private Capture nav;
+	private Button bfind;
+
+	@Override
+	public void onCreate(Bundle bundle) {
+		super.onCreate(bundle);
+		setContentView(R.layout.capture);
+		this.fprint = this;
+
+		// hook up compass sensor
+		compassdata = new compassData(this);
+		compassdata.load();
+
+		nav = (Capture) findViewById(R.id.surfaceView);
+
+		// add clicklistener to buttons
+		bstart = (Button) this.findViewById(R.id.start);
+		bstop = (Button) this.findViewById(R.id.stop);
+		bfind = (Button) this.findViewById(R.id.findme);
+
+		bfind.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				if (nav != null) {
+					inventory.mode = inventory.Mode.navigate;
+					nav.registerReciever();
+				}
+			}
+		});
+
+		bstart.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				if (nav != null) {
+					nav.writeMappingtoFile();
+					inventory.toast("Mapping saved...", fprint, true);
+				}
+			}
+		});
+
+		bstop.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// clear all plotted points
+				inventory.drawnpoints = new ArrayList<PointF>();
+				inventory.mode = inventory.Mode.scanning;
+			}
+		});
+
+	}
+
+}
