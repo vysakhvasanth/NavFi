@@ -60,9 +60,6 @@ public class compassData {
 				compassValue = inventory.lowpassFilter(compassValue,
 						event.values[0], 0.7); // pass only the x component of
 												// the compass
-				compValue[0] = event.values[0];
-				compValue[1] = event.values[1];
-				compValue[2] = event.values[2];
 				break;
 			default:
 			}// switch (event.sensor.getType())

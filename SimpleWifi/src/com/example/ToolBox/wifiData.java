@@ -122,7 +122,7 @@ public class wifiData extends BroadcastReceiver {
 
 	}
 
-	public void saveData() {
+	public void addLocationToList() {
 
 		// calculate the average rssi
 		int rssiaverage = 0;
@@ -145,7 +145,7 @@ public class wifiData extends BroadcastReceiver {
 	}
 
 	/*
-	 * Serialize data and write to file accesspoint details
+	 * Serialize data and write to file access point details
 	 */
 	public boolean writetofile(HashMap<String, Location> loc)
 			throws IOException {
@@ -178,7 +178,6 @@ public class wifiData extends BroadcastReceiver {
 	/*
 	 * De-serialize lists, and read data
 	 */
-
 	public List<Location> readFromFile() throws StreamCorruptedException,
 			IOException {
 

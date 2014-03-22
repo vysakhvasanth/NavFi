@@ -12,15 +12,23 @@ import java.util.List;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.widget.Toast;
 
+import com.example.simplewifi.R;
+
 public class inventory {
 
 	public static float X = 150;
 	public static float Y = 150;
+	static int maxHeight = 1720;
+	static int maxWidth = 1080;
+	public static boolean compass_hooked = false;
+	public static compassData compassdata;
 
 	public enum Mode {
 		scanning, navigate
@@ -40,6 +48,35 @@ public class inventory {
 			Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
 		else
 			Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+	}
+
+	public static Bitmap getMap(Context context) {
+		Bitmap map = BitmapFactory.decodeResource(context.getResources(),
+				R.drawable.mp);
+		Bitmap mapscale = Bitmap.createScaledBitmap(map, maxWidth, maxHeight,
+				true);
+
+		return mapscale;
+
+	}
+
+	public static Bitmap getArrow(Context context) {
+
+		Bitmap arrow = BitmapFactory.decodeResource(context.getResources(),
+				R.drawable.arrow);
+
+		return arrow;
+	}
+
+	public static void hookCompassData(Context context) {
+
+		if (!compass_hooked) {
+			// hook up compass sensor
+			compassdata = new compassData(context);
+			compassdata.load();
+			compass_hooked = true;
+		}
+
 	}
 
 	public static Paint redPaint() {
@@ -73,6 +110,13 @@ public class inventory {
 		return p;
 	}
 
+	public static Paint text50BLUE() {
+		Paint p = new Paint();
+		p.setTextSize(50.0f);
+		p.setColor(Color.BLUE);
+		return p;
+	}
+
 	public static List<PointF> drawnpoints = new ArrayList<PointF>();
 
 	public static AlertDialog.Builder START_DIALOG(Context context) {
@@ -91,4 +135,5 @@ public class inventory {
 	public static int returnID() {
 		return inc_id;
 	}
+
 }

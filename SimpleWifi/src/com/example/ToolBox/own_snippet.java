@@ -7,9 +7,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.simplewifi.R;
-import com.example.simplewifi.R.drawable;
-
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -28,6 +25,8 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Toast;
+
+import com.example.simplewifi.R;
 
 public class own_snippet extends SurfaceView implements Runnable {
 
@@ -328,3 +327,13 @@ public class own_snippet extends SurfaceView implements Runnable {
 // return true;
 // }
 // }
+
+// map drawing
+/* Reload map if its when user resumes app from pause */
+// if (map == null) {
+//
+// map = BitmapFactory.decodeResource(ctx.getResources(),
+// R.drawable.mp);
+//
+// }
+// mapscale = Bitmap.createScaledBitmap(map, maxWidth, maxHeight, true);

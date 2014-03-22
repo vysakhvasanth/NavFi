@@ -14,7 +14,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.PointF;
@@ -35,17 +34,10 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 		OnTouchListener {
 
 	SurfaceHolder holder;
-	private int tmp = 1;
 	private PaintThread draw;
 	private Bitmap arrow;
 	public Bitmap map;
-	final int maxHeight = 1720;
-	final int maxWidth = 1080;
-	Bitmap mapscale;
-
 	private Context ctx;
-	private Bitmap cp_map;
-	public Canvas ca;
 	private PointF latest;
 	public static float x;
 	public static float y;
@@ -55,6 +47,7 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 	public static boolean scan_end = false;
 	private boolean data_proc = false;
 	private AlertDialog.Builder dialogStart, dialogEnd;
+	private PointF startPoint, endPoint;
 
 	public Capture(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -63,33 +56,24 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 
 		holder = getHolder();
 		holder.addCallback(this);
-		map = BitmapFactory.decodeResource(context.getResources(),
-				R.drawable.mp);
-		arrow = BitmapFactory.decodeResource(context.getResources(),
-				R.drawable.arrow);
-
+		map = inventory.getMap(context);
+		arrow = inventory.getArrow(ctx);
 		// hook up wifi sensor
 		wify = (WifiManager) context.getSystemService(context.WIFI_SERVICE);
 		wifidata = new wifiData(wify, context);
 
 		// initialize AlertDialogs
 		createStartDialog();
-		createStopDailog();
+		createStopDialog();
 
 	}
 
-	/*
-	 * Draw everything here; make other classes accessible to this
-	 */
+	// Draw everything here; make other classes accessible to this
 	@Override
 	public void onDraw(Canvas c) {
 
-		this.ca = c;
-
 		drawMap(c);
 		drawArrow(c);
-		c.drawText(String.valueOf(compassData.getCompassValue()), 50, 50,
-				inventory.text50());
 		drawPoints(inventory.drawnpoints, c);
 
 	}
@@ -136,8 +120,11 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 	// draw the arrow position
 	private void drawArrow(Canvas c) {
 
+		// log compass sensor values
+		c.drawText(String.valueOf(compassData.getCompassValue()), 50, 50,
+				inventory.text50());
+
 		Matrix m = new Matrix();
-		m = new Matrix();
 		m.setRotate((float) (compassData.getCompassValue()),
 				arrow.getWidth() / 2.0f, arrow.getHeight() / 2.0f);
 
@@ -165,16 +152,10 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 	}
 
 	void drawMap(Canvas c) {
-
-		/* Reload map if its when user resumes app from pause */
 		if (map == null) {
-
-			map = BitmapFactory.decodeResource(ctx.getResources(),
-					R.drawable.mp);
-
+			map = inventory.getMap(ctx);
 		}
-		mapscale = Bitmap.createScaledBitmap(map, maxWidth, maxHeight, true);
-		c.drawBitmap(mapscale, 0, 0, null);
+		c.drawBitmap(map, 0, 0, null);
 	}
 
 	@Override
@@ -220,7 +201,7 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 		return true;
 	}
 
-	/* Start dialouge box when user press on screen */
+	// Start dialouge box when user press on screen
 	public void createStartDialog() {
 
 		dialogStart = new AlertDialog.Builder(ctx);
@@ -236,8 +217,13 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 						// call to record data
 						registerReciever();
 
-						// add the points to the list
-						inventory.drawnpoints.add(new PointF(x, y));
+						// get start co-ordinates
+						startPoint = new PointF(x, y);
+
+						// store the startPoint to list in order to draw
+						// circles indicating the area
+						inventory.drawnpoints.add(startPoint);
+
 						wifi_registered = true;
 						data_proc = true;
 						scan_end = false;
@@ -258,7 +244,7 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 
 	}
 
-	public void createStopDailog() {
+	public void createStopDialog() {
 
 		dialogEnd = new AlertDialog.Builder(ctx);
 		dialogEnd.setTitle("Stop reading data...");
@@ -271,13 +257,24 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 					public void onClick(DialogInterface dialog, int which) {
 						inventory.toast("Stopped reading...", ctx, false);
 
-						// call to stop data if registered
-						// if (wifi_registered) {}
-						inventory.drawnpoints.add(new PointF(x, y));
+						// find mid point between the start and end
+						// add this to location id
+						endPoint = new PointF(x, y);
+						PointF midpoint = new PointF();
+						midpoint.x = (endPoint.x + startPoint.x) / 2;
+						midpoint.y = (endPoint.y + startPoint.y) / 2;
+
+						x = midpoint.x;
+						y = midpoint.y;
+
+						// store the endPoint to list in order to draw
+						// circles indicating the area
+						inventory.drawnpoints.add(endPoint);
+
 						unregisterReciever();
 						data_proc = false;
 						scan_end = true;
-						wifidata.saveData();
+						wifidata.addLocationToList();
 					}
 				});
 
@@ -306,6 +303,7 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 		ctx.unregisterReceiver(wifidata);// stops reading data
 	}
 
+	// save recording to database
 	public void writeMappingtoFile() {
 		try {
 			wifidata.writetofile(inventory.locationPoints);
