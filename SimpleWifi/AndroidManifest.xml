@@ -15,11 +15,12 @@
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:label="Fingerprinting"
+        android:label="NavFi"
         android:theme="@style/AppTheme" >
         <activity
+            android:screenOrientation="portrait"
             android:name="com.example.simplewifi.Main"
-            android:label="Fingerprinting" >
+            android:label="NavFi" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -27,6 +28,7 @@
         </activity>
         
         <activity
+            android:screenOrientation="portrait"
             android:name="com.example.simplewifi.FingerPrinter" >
              <intent-filter>
                 <action android:name="android.intent.action.FingerPrinter" />
@@ -35,6 +37,7 @@
         </activity>
         
          <activity
+             android:screenOrientation="portrait"
             android:name="com.example.simplewifi.Navigation" >
              <intent-filter>
                 <action android:name="android.intent.action.Navigation" />

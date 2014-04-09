@@ -15,7 +15,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
-import com.example.ToolBox.inventory;
+import com.example.ToolBox.Inventory;
 import com.example.ToolBox.wifiData;
 
 public class FingerPrinter extends Activity {
@@ -34,7 +34,7 @@ public class FingerPrinter extends Activity {
 		setContentView(R.layout.capture);
 		this.fingerPrinter = this;
 
-		inventory.hookCompassData(this);// hook compass sensor
+		// inventory.startAllSensors(this);// hook up all three sensors
 
 		nav = (Capture) findViewById(R.id.surfaceView);
 
@@ -48,7 +48,7 @@ public class FingerPrinter extends Activity {
 			@Override
 			public void onClick(View v) {
 				if (nav != null) {
-					inventory.mode = inventory.Mode.navigate;
+					Inventory.mode = Inventory.Mode.navigate;
 					nav.registerReciever();
 				}
 			}
@@ -60,7 +60,7 @@ public class FingerPrinter extends Activity {
 			public void onClick(View v) {
 				if (nav != null) {
 					nav.writeMappingtoFile();
-					inventory.toast("Mapping saved...", fingerPrinter, true);
+					Inventory.toast("Mapping saved...", fingerPrinter, true);
 				}
 			}
 		});
@@ -70,8 +70,8 @@ public class FingerPrinter extends Activity {
 			@Override
 			public void onClick(View v) {
 				// clear all plotted points
-				inventory.drawnpoints = new ArrayList<PointF>();
-				inventory.mode = inventory.Mode.scanning;
+				Inventory.drawnpoints = new ArrayList<PointF>();
+				Inventory.mode = Inventory.Mode.scanning;
 			}
 		});
 

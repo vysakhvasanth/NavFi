@@ -26,8 +26,8 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnTouchListener;
 
-import com.example.ToolBox.compassData;
-import com.example.ToolBox.inventory;
+import com.example.ToolBox.Inventory;
+import com.example.ToolBox.SensorData;
 import com.example.ToolBox.wifiData;
 
 public class Capture extends SurfaceView implements SurfaceHolder.Callback,
@@ -43,6 +43,7 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 	public static float y;
 	private WifiManager wify;
 	public wifiData wifidata;
+	private SensorData sensorData;
 	private boolean wifi_registered = false;
 	public static boolean scan_end = false;
 	private boolean data_proc = false;
@@ -56,11 +57,14 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 
 		holder = getHolder();
 		holder.addCallback(this);
-		map = inventory.getMap(context);
-		arrow = inventory.getArrow(ctx);
+		map = Inventory.getMap(context);
+		arrow = Inventory.getArrow(ctx);
 		// hook up wifi sensor
 		wify = (WifiManager) context.getSystemService(context.WIFI_SERVICE);
 		wifidata = new wifiData(wify, context);
+
+		sensorData = new SensorData(context);
+		sensorData.loadCompass();
 
 		// initialize AlertDialogs
 		createStartDialog();
@@ -74,7 +78,7 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 
 		drawMap(c);
 		drawArrow(c);
-		drawPoints(inventory.drawnpoints, c);
+		drawPoints(Inventory.drawnpoints, c);
 
 	}
 
@@ -94,21 +98,21 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 				// c.drawCircle(points.get(i).x, points.get(i).y, 10, pa);
 				RectF r = new RectF();
 				r.set(px, py, px + 40.0f, py + 40.0f);
-				c.drawRect(r, inventory.redPaint());
+				c.drawRect(r, Inventory.redPaint());
 
 				// draw line; draw from previous to current
 				if (size > 1 && i != 0) {
 					float x = points.get(i - 1).x;
 					float y = points.get(i - 1).y;
 					c.drawLine(x, y, points.get(i).x, points.get(i).y,
-							inventory.bluePaint());
+							Inventory.bluePaint());
 
 					if (scan_end) {
 						// midpoint
 						float xmid = (points.get(i).x + x) / 2;
 						float ymid = (points.get(i).y + y) / 2;
-						c.drawText("A" + String.valueOf(inventory.returnID()),
-								xmid, ymid, inventory.text50MAG());
+						c.drawText("A" + String.valueOf(Inventory.returnID()),
+								xmid, ymid, Inventory.text50MAG());
 					}
 
 				}
@@ -121,14 +125,14 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 	private void drawArrow(Canvas c) {
 
 		// log compass sensor values
-		c.drawText(String.valueOf(compassData.getCompassValue()), 50, 50,
-				inventory.text50());
+		c.drawText(String.valueOf(SensorData.getCompassValue()), 50, 50,
+				Inventory.text50());
 
 		Matrix m = new Matrix();
-		m.setRotate((float) (compassData.getCompassValue()),
+		m.setRotate((float) (SensorData.getCompassValue()),
 				arrow.getWidth() / 2.0f, arrow.getHeight() / 2.0f);
 
-		m.postTranslate(inventory.X - arrow.getWidth() / 2.0f, inventory.Y
+		m.postTranslate(Inventory.X - arrow.getWidth() / 2.0f, Inventory.Y
 				- arrow.getHeight() / 2.0f);
 		c.drawBitmap(arrow, m, null);
 
@@ -153,7 +157,7 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 
 	void drawMap(Canvas c) {
 		if (map == null) {
-			map = inventory.getMap(ctx);
+			map = Inventory.getMap(ctx);
 		}
 		c.drawBitmap(map, 0, 0, null);
 	}
@@ -164,8 +168,10 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 		// it might touch the Surface after we return and explode
 		boolean retry = true;
 		draw.setRun(false);
-		map = null;
 
+		if (sensorData != null)
+			sensorData.unloadComp();
+		map = null;
 		while (retry) {
 			try {
 				draw.join();
@@ -222,7 +228,7 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 
 						// store the startPoint to list in order to draw
 						// circles indicating the area
-						inventory.drawnpoints.add(startPoint);
+						Inventory.drawnpoints.add(startPoint);
 
 						wifi_registered = true;
 						data_proc = true;
@@ -255,7 +261,7 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						inventory.toast("Stopped reading...", ctx, false);
+						Inventory.toast("Stopped reading...", ctx, false);
 
 						// find mid point between the start and end
 						// add this to location id
@@ -269,7 +275,7 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 
 						// store the endPoint to list in order to draw
 						// circles indicating the area
-						inventory.drawnpoints.add(endPoint);
+						Inventory.drawnpoints.add(endPoint);
 
 						unregisterReciever();
 						data_proc = false;
@@ -306,7 +312,7 @@ public class Capture extends SurfaceView implements SurfaceHolder.Callback,
 	// save recording to database
 	public void writeMappingtoFile() {
 		try {
-			wifidata.writetofile(inventory.locationPoints);
+			wifidata.writetofile(Inventory.locationPoints);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

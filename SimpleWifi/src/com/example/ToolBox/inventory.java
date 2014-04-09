@@ -21,14 +21,13 @@ import android.widget.Toast;
 
 import com.example.simplewifi.R;
 
-public class inventory {
+public class Inventory {
 
-	public static float X = 150;
-	public static float Y = 150;
+	public static float X = 540;
+	public static float Y = 1060;
 	static int maxHeight = 1720;
 	static int maxWidth = 1080;
 	public static boolean compass_hooked = false;
-	public static compassData compassdata;
 
 	public enum Mode {
 		scanning, navigate
@@ -40,6 +39,11 @@ public class inventory {
 			double a) {
 		return old_value + a * (new_value - old_value);
 	}
+
+	// public static double lowpassFilter(double old_value, double new_value,
+	// double a) {
+	// return old_value * a + ((1 - a) * (new_value));
+	// }
 
 	public static HashMap<String, Location> locationPoints = new HashMap<String, Location>();
 
@@ -66,17 +70,6 @@ public class inventory {
 				R.drawable.arrow);
 
 		return arrow;
-	}
-
-	public static void hookCompassData(Context context) {
-
-		if (!compass_hooked) {
-			// hook up compass sensor
-			compassdata = new compassData(context);
-			compassdata.load();
-			compass_hooked = true;
-		}
-
 	}
 
 	public static Paint redPaint() {

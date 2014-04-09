@@ -11,7 +11,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
-import com.example.ToolBox.inventory;
+import com.example.ToolBox.Inventory;
 
 /**
  * 
@@ -72,11 +72,11 @@ public class StepDetection {
 				st.dataHookAcc(System.currentTimeMillis(), event.values[0],
 						event.values[1], event.values[2]);
 				// just update the oldest z value
-				lastAcc[0] = inventory.lowpassFilter(lastAcc[0],
+				lastAcc[0] = Inventory.lowpassFilter(lastAcc[0],
 						event.values[0], a);
-				lastAcc[1] = inventory.lowpassFilter(lastAcc[1],
+				lastAcc[1] = Inventory.lowpassFilter(lastAcc[1],
 						event.values[1], a);
-				lastAcc[2] = inventory.lowpassFilter(lastAcc[2],
+				lastAcc[2] = Inventory.lowpassFilter(lastAcc[2],
 						event.values[2], a);
 				break;
 			case Sensor.TYPE_ORIENTATION:

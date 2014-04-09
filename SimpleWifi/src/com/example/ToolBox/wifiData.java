@@ -66,7 +66,7 @@ public class wifiData extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 
 		List<ScanResult> results = wm.getScanResults();
-		inventory.toast("Reading data", context, true);
+		Inventory.toast("Reading data", context, true);
 		for (ScanResult result : results) {
 
 			if (!bssid.contains(result.BSSID)) {
@@ -81,7 +81,7 @@ public class wifiData extends BroadcastReceiver {
 			}
 		}
 
-		if (inventory.mode == inventory.Mode.navigate) {
+		if (Inventory.mode == Inventory.Mode.navigate) {
 
 			LocationFinder(StrongestAP);
 			return;
@@ -104,18 +104,18 @@ public class wifiData extends BroadcastReceiver {
 		}
 
 		if (al == null) {
-			inventory.toast("No data in list", ctx, false);
+			Inventory.toast("No data in list", ctx, false);
 			return;
 		}
 
 		/* Check against the loop */
 		for (Location l : al) {
-			inventory.toast("Strongest ap: " + StrogestAP + "/ Current AP: "
+			Inventory.toast("Strongest ap: " + StrogestAP + "/ Current AP: "
 					+ l._BSSID, ctx, true);
 			if (l._BSSID.equals(StrogestAP)) {
-				inventory.X = l.x;
-				inventory.Y = l.y;
-				inventory.toast("Location found!", ctx, true);
+				Inventory.X = l.x;
+				Inventory.Y = l.y;
+				Inventory.toast("Location found!", ctx, true);
 			}
 		}
 		wm.startScan();
@@ -137,10 +137,10 @@ public class wifiData extends BroadcastReceiver {
 		l._BSSID = StrongestAP;
 		l._RSSI = rssiaverage;
 		l._BSSIDs = bssid;
-		l.ID = inventory.createID();
+		l.ID = Inventory.createID();
 		l.x = Capture.x;
 		l.y = Capture.y;
-		inventory.locationPoints.put(l._BSSID, l);// store in list
+		Inventory.locationPoints.put(l._BSSID, l);// store in list
 
 	}
 

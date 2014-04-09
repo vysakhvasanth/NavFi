@@ -15,9 +15,8 @@ import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.example.ToolBox.acceleratorData;
-import com.example.ToolBox.compassData;
-import com.example.ToolBox.inventory;
+import com.example.ToolBox.Inventory;
+import com.example.ToolBox.SensorData;
 import com.example.stepDetection.StepTrigger;
 
 /*
@@ -39,6 +38,7 @@ public class Navigator extends SurfaceView implements SurfaceHolder.Callback,
 	private wifiSampler wifiSamp;
 	private WifiManager wify;
 	private Bitmap arrow;
+	SensorData sensorData;
 
 	public Navigator(Context context, AttributeSet attr) {
 		super(context, attr);
@@ -46,17 +46,18 @@ public class Navigator extends SurfaceView implements SurfaceHolder.Callback,
 		this.holder = getHolder();
 		holder.addCallback(this); // register event to the
 									// SurfaceHolder.Callback
-		map = inventory.getMap(context);
-		arrow = inventory.getArrow(context);
+		map = Inventory.getMap(context);
+		arrow = Inventory.getArrow(context);
 
 		// hook up wifi sensor
 		wify = (WifiManager) context.getSystemService(ctx.WIFI_SERVICE);
 		wifiSamp = new wifiSampler(wify, context);
 
-		// registerReciever();
-
-		acceleratorData accdata = new acceleratorData(context);
-		accdata.load();
+		// register accelerometer & magnetic sensor;
+		sensorData = new SensorData(context);
+		sensorData.loadAcc();
+		sensorData.loadMagnetic();
+		sensorData.loadCompass();
 
 	}
 
@@ -83,6 +84,11 @@ public class Navigator extends SurfaceView implements SurfaceHolder.Callback,
 		boolean retry = true;
 		painter.setRun(false);
 		map = null;
+		if (sensorData != null) {
+			sensorData.unloadAcc();
+			sensorData.unloadComp();
+			sensorData.unloadMagnetic();
+		}
 
 		while (retry) {
 			try {
@@ -100,20 +106,20 @@ public class Navigator extends SurfaceView implements SurfaceHolder.Callback,
 		drawMap(c);
 		drawArrow(c);
 
-		c.drawText("Steps :" + acceleratorData.stepCounter, 50, 1500,
-				inventory.text50BLUE());
-		c.drawText("Acc data X:" + acceleratorData.lastAcc[0] + ", ", 50, 1550,
-				inventory.text50MAG());
-		c.drawText("Acc data Y:" + acceleratorData.lastAcc[1] + ", ", 50, 1600,
-				inventory.text50MAG());
-		c.drawText("Acc data Z:" + acceleratorData.lastAcc[2] + ", ", 50, 1650,
-				inventory.text50());
+		c.drawText("Steps :" + SensorData.stepCounter, 50, 1500,
+				Inventory.text50BLUE());
+		c.drawText("Acc data X:" + SensorData.lastAcc[0] + ", ", 50, 1550,
+				Inventory.text50MAG());
+		c.drawText("Acc data Y:" + SensorData.lastAcc[1] + ", ", 50, 1600,
+				Inventory.text50MAG());
+		c.drawText("Acc data Z:" + SensorData.lastAcc[2] + ", ", 50, 1650,
+				Inventory.text50());
 	}
 
 	void drawMap(Canvas c) {
 		if (map == null) {
 
-			map = inventory.getMap(ctx);
+			map = Inventory.getMap(ctx);
 		}
 
 		c.drawBitmap(map, 0, 0, null);
@@ -121,15 +127,32 @@ public class Navigator extends SurfaceView implements SurfaceHolder.Callback,
 
 	void drawArrow(Canvas c) {
 
-		// log values of compass sensor
-		c.drawText(String.valueOf(compassData.getCompassValue()), 50, 50,
-				inventory.text50());
+		// log values of sensor s
+		c.drawText(String.valueOf(SensorData.getCompassValue()), 50, 50,
+				Inventory.text50());
+		c.drawText(String.valueOf(SensorData.getMagneticValue()), 50, 100,
+				Inventory.text50());
+		c.drawText("X: " + String.valueOf(Inventory.X), 50, 150,
+				Inventory.text50BLUE());
+		c.drawText("Y: " + String.valueOf(Inventory.Y), 50, 250,
+				Inventory.text50BLUE());
+
+		// setting boundary
+		if (Inventory.X >= 1080)
+			Inventory.X = 1080 - arrow.getWidth();
+		if (Inventory.Y >= 1720)
+			Inventory.Y = 1720 - arrow.getHeight();
+
+		if (Inventory.X <= 0)
+			Inventory.X = 0 + arrow.getWidth();
+		if (Inventory.Y <= 0)
+			Inventory.Y = 0 + arrow.getHeight();
 
 		Matrix m = new Matrix();
-		m.setRotate((float) (compassData.getCompassValue()),
+		m.setRotate((float) (SensorData.getCompassValue()),
 				arrow.getWidth() / 2.0f, arrow.getHeight() / 2.0f);
 
-		m.postTranslate(inventory.X - arrow.getWidth() / 2.0f, inventory.Y
+		m.postTranslate(Inventory.X - arrow.getWidth() / 2.0f, Inventory.Y
 				- arrow.getHeight() / 2.0f);
 		c.drawBitmap(arrow, m, null);
 
@@ -187,7 +210,7 @@ class wifiSampler extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		List<ScanResult> results = wm.getScanResults();
-		inventory.toast("Reading data", context, true);
+		Inventory.toast("Reading data", context, true);
 		for (ScanResult result : results) {
 
 			// compute the strongest ap
